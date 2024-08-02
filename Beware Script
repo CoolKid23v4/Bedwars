@@ -1,0 +1,436 @@
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Window = OrionLib:MakeWindow({Name = "Smoke v6", IntroEnabled= false, HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest21414w4234214"})
+---TABS
+local CombatTab = Window:MakeTab({
+	Name = "Combat",
+	Icon = "rbxassetid://13350770192",
+	PremiumOnly = false
+})
+
+local BlatantTab = Window:MakeTab({
+	Name = "Blatant",
+	Icon = "rbxassetid://13350767943",
+	PremiumOnly = false
+})
+
+local RenderTab = Window:MakeTab({
+	Name = "Render",
+	Icon = "rbxassetid://13350832775",
+	PremiumOnly = false
+})
+
+local UtilityTab = Window:MakeTab({
+	Name = "Utility",
+	Icon = "rbxassetid://13350793918",
+	PremiumOnly = false
+})
+-- STATUS SYMBLES ✅, 🟧 , 🟥
+local StatusTab = Window:MakeTab({
+	Name = "Status: ✅",
+	Icon = "",
+	PremiumOnly = true
+})
+--Sections
+local Section = CombatTab:AddSection({
+	Name = "Combat"
+})
+
+local Section = BlatantTab:AddSection({
+	Name = "Blatant"
+})
+
+local Section = RenderTab:AddSection({
+	Name = "Render"
+})
+
+local Section = UtilityTab:AddSection({
+	Name = "Utility"
+})
+--Combat STUFF
+CombatTab:AddToggle({
+	Name = "BowAura",
+	Default = false,
+	Callback = function(Value)
+		if callback then
+			task.spawn(function()
+				repeat
+					task.wait()
+					local bow, bowdata = getBow()
+					if bow and entity.isAlive then
+						local plr
+						if SilentAimMode["Value"] == "Legit" then
+							plr = GetNearestHumanoidToMouse(true, SilentAimFOV["Value"], {
+								AimPart = "HumanoidRootPart",
+								WallCheck = not ArrowWallbang["Enabled"],
+								Origin = lplr.Character:GetPivot().Position
+							})
+						else
+							plr = GetNearestHumanoidToPosition(true, SilentAimFOV["Value"], {
+								AimPart = "HumanoidRootPart",
+								WallCheck = not ArrowWallbang["Enabled"],
+								Origin = lplr.Character:GetPivot().Position
+							})
+						end
+						if plr then 
+							local playertype, playerattackable = WhitelistFunctions:CheckPlayerType(plr.Player)
+							if not playerattackable then
+								return
+							end
+							print(bow)
+							projectiles.Projectile.new(lplr, lplr.Character:GetPivot(), bowdata.id, 73, 1, function()
+								return remotes.shoot:InvokeServer(bow, 73, lplr.Character:GetPivot().Position, lplr.Character:GetPivot().LookVector, 1)
+							end)
+							task.wait(bowdata.cooldown or 0.1)
+						end
+					end
+				until (not bowaura["Enabled"])
+			end)
+		end
+	end
+})
+
+CombatTab:AddSlider({
+	Name = "Reach",
+	Min = 1,
+	Max = 15,
+	Default = 1,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 1,
+	ValueName = "Reach",
+	Callback = function(Value)
+		if killaurarangecirclepart then 
+			killaurarangecirclepart.Size = Vector3.new(val * 0.7, 0.01, val * 0.7)
+		end
+	end
+})
+--Blatant
+BlatantTab:AddToggle({
+	Name = "Killaura",
+	Default = false,
+	Callback = function(Value)
+		if callback then
+			if killaurarangecirclepart then killaurarangecirclepart.Parent = cam end
+			local targetedplayer
+			RunLoops:BindToHeartbeat("Killaura", 1, function()
+				for i,v in pairs(killauraboxes) do 
+					if v:IsA("BoxHandleAdornment") and v.Adornee then
+						local cf = v.Adornee and v.Adornee.CFrame
+						local onex, oney, onez = cf:ToEulerAnglesXYZ() 
+						v.CFrame = CFrame.new() * CFrame.Angles(-onex, -oney, -onez)
+					end
+				end
+				if entity.isAlive then
+					local Root = entity.character.HumanoidRootPart
+					if Root then
+						if killaurarangecirclepart then 
+							killaurarangecirclepart.Position = Root.Position - Vector3.new(0, entity.character.Humanoid.HipHeight, 0)
+						end
+						local Neck = entity.character.Head:FindFirstChild("Neck")
+						local LowerTorso = Root.Parent and Root.Parent:FindFirstChild("LowerTorso")
+						local RootC0 = LowerTorso and LowerTorso:FindFirstChild("Root")
+						if Neck and RootC0 then
+							if orig == nil then
+								orig = Neck.C0.p
+							end
+							if orig2 == nil then
+								orig2 = RootC0.C0.p
+							end
+							if orig2 then
+								if targetedplayer ~= nil and killauracframe["Enabled"] then
+									local targetPos = targetedplayer.RootPart.Position + Vector3.new(0, 2, 0)
+									local direction = (Vector3.new(targetPos.X, targetPos.Y, targetPos.Z) - entity.character.Head.Position).Unit
+									local direction2 = (Vector3.new(targetPos.X, Root.Position.Y, targetPos.Z) - Root.Position).Unit
+									local lookCFrame = (CFrame.new(Vector3.zero, (Root.CFrame):VectorToObjectSpace(direction)))
+									local lookCFrame2 = (CFrame.new(Vector3.zero, (Root.CFrame):VectorToObjectSpace(direction2)))
+									Neck.C0 = CFrame.new(orig) * CFrame.Angles(lookCFrame.LookVector.Unit.y, 0, 0)
+									RootC0.C0 = lookCFrame2 + orig2
+								else
+									Neck.C0 = CFrame.new(orig)
+									RootC0.C0 = CFrame.new(orig2)
+								end
+							end
+						end
+					end
+				end
+			end)
+			task.spawn(function()
+				repeat
+					task.wait()
+					if (not Killaura["Enabled"]) then break end
+					local attackedplayers = {}
+					targetinfo.Targets.Killaura = nil
+					if entity.isAlive then
+						local plrs = GetAllNearestHumanoidToPosition(killauratargetframe["Players"]["Enabled"], killaurarange["Value"], 100)
+						if #plrs > 0 then
+							local tool, toolmeta = getSword()
+							if tool then
+								if (not killauramouse["Enabled"]) or uis:IsMouseButtonPressed(0) then 
+									for i,v in pairs(plrs) do
+										local localfacing = entity.character.HumanoidRootPart.CFrame.lookVector
+										local vec = (v.RootPart.Position - entity.character.HumanoidRootPart.Position).unit
+										local angle = math.acos(localfacing:Dot(vec))
+										if angle >= (math.rad(killauraangle["Value"]) / 2) then continue end
+										killauranear = v
+										targetinfo.Targets.Killaura = v
+										if killauratarget["Enabled"] then
+											table.insert(attackedplayers, v)
+										end
+										if targetsize == 1 then 
+											targetedplayer = v
+										end
+										local playertype, playerattackable = WhitelistFunctions:CheckPlayerType(v.Player)
+										if not playerattackable then
+											continue
+										end
+										local selfcheck = localserverpos or entity.character.HumanoidRootPart.Position
+										if (selfcheck - (otherserverpos[v.Player] or v.RootPart.Position)).Magnitude > 15 then 
+											continue
+										end
+										if killauraanimdelay < tick() then
+											killauraanimdelay = tick() + 0.5
+											local anims = itemhandler.getItemAnimations(toolmeta.id, "action")
+											if killauraanimnum >= #anims then killauraanimnum = 0 end
+											killauraanimnum = killauraanimnum + 1
+											local anim = Instance.new("Animation")
+											anim.AnimationId = anims[killauraanimnum]
+											local loaded = entity.character.Humanoid.Animator:LoadAnimation(anim)
+											loaded.Stopped:Connect(function()
+												if anim then anim:Destroy() anim = nil end
+												if loaded then loaded:Destroy() loaded = nil end
+											end)
+											loaded:Play(nil, 1, loaded.Length / 0.5)
+										end
+										local rem = v.Animal and killauraremote2 or killauraremote
+										rem:FireServer(tonumber(tool), v.Animal and v.Character or v.Player)
+									end
+									task.wait(0.1)
+								end
+							else
+								lastplr = nil
+								targetedplayer = nil
+								killauranear = nil
+							end
+						end
+						for i,v in pairs(killauraboxes) do 
+							local attacked = attackedplayers[i]
+							v.Adornee = attacked and ((not killauratargethighlight["Enabled"]) and attacked.RootPart or (not GuiLibrary["ObjectsThatCanBeSaved"]["ChamsOptionsButton"]["Api"]["Enabled"]) and attacked.Character or nil)
+						end
+						if (#plrs <= 0) then
+							lastplr = nil
+							targetedplayer = nil
+							killauranear = nil
+						end
+					end
+				until (not Killaura["Enabled"])
+			end)
+		else
+			RunLoops:UnbindFromHeartbeat("Killaura") 
+			killauranear = nil
+			for i,v in pairs(killauraboxes) do 
+				v.Adornee = nil
+			end
+			if killaurarangecirclepart then 
+				killaurarangecirclepart.Parent = nil
+			end
+		end
+	end,
+})
+
+BlatantTab:AddToggle({
+	Name = "Nofall",
+	Default = false,
+	Callback = function(Value)
+		-- Get the local player
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- Function to prevent fall damage for the local player
+function preventFallDamage()
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        local humanoid = player.Character.Humanoid
+
+        -- Connect to the Humanoid's 'StateChanged' event
+        humanoid.StateChanged:Connect(function(oldState, newState)
+            if newState == Enum.HumanoidStateType.Freefall then
+                -- When the player is in freefall, set the 'Falling' state to false
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+            elseif newState == Enum.HumanoidStateType.Landed then
+                -- When the player lands, set the 'Falling' state back to true
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
+            end
+        end)
+    end
+end
+
+-- Call the function to prevent fall damage for the local player
+preventFallDamage()
+
+	end    
+})
+
+BlatantTab:AddSlider({
+	Name = "Speed",
+	Min = 0,
+	Max = 21,
+	Default = 5,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 1,
+	ValueName = "Speed DONT HIT SHIFT",
+	Callback = function(Value)
+		game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = s
+	end    
+})
+
+RenderTab:AddToggle({
+	Name = "ESP",
+	Default = false,
+	Callback = function(Value)
+	local Players = game:GetService("Players")
+
+-- Function to highlight all players
+function highlightAllPlayers()
+    for i, player in ipairs(Players:GetPlayers()) do
+        if player.Character then
+            for j, part in ipairs(player.Character:GetChildren()) do
+                if part:IsA("BasePart") then
+                    -- Create a new 'BoxHandleAdornment' (this will act as the highlight)
+                    local highlight = Instance.new("BoxHandleAdornment")
+                    highlight.Adornee = part
+                    highlight.AlwaysOnTop = true
+                    highlight.ZIndex = 10
+                    highlight.Size = part.Size
+                    highlight.Color3 = Color3.new(1, 0, 0) -- RGB for red
+                    highlight.Transparency = 0.5 -- Adjust as needed
+                    highlight.Parent = part
+                end
+            end
+        end
+    end
+end
+
+-- Call the function to highlight all players
+highlightAllPlayers()
+end
+})
+
+--Utility
+UtilityTab:AddToggle({
+	Name = "AntiVoid",
+	Default = false,
+	Callback = function(Value)
+		if callback then 
+			RunLoops:BindToHeartbeat("AntiVoid", 1, function()
+				if entity.isAlive and entity.character.HumanoidRootPart.Position.Y < (workspace.FallenPartsDestroyHeight + 20) then 
+					local comp = {entity.character.HumanoidRootPart.CFrame:GetComponents()}
+					local ray = workspace:Raycast(entity.character.HumanoidRootPart.CFrame.p + Vector3.new(0, 1000, 0), Vector3.new(0, -1000, 0))
+					comp[2] = 14
+					if ray then
+						comp[2] = ray.Position.Y + (entity.character.Humanoid.HipHeight + (entity.character.HumanoidRootPart.Size.Y / 2))
+					end
+					entity.character.HumanoidRootPart.CFrame = CFrame.new(unpack(comp))
+					entity.character.HumanoidRootPart.Velocity = Vector3.new(entity.character.HumanoidRootPart.Velocity.X, 0, entity.character.HumanoidRootPart.Velocity.Z)
+				end
+			end)
+		else
+			RunLoops:UnbindFromHeartbeat("AntiVoid")
+		end
+	end
+})
+
+UtilityTab:AddToggle({
+	Name = "BedNuker",
+	Default = false,
+	Callback = function(Value)
+		if callback then 
+			RunLoops:BindToRenderStep("Nuker", 1, function()
+				for i,v in pairs(recentlyhit) do 
+					if guiobjects[i] then 
+						local primary = primaryparts[i]
+						if primary then
+							local pos, vis = cam:WorldToViewportPoint(primary.Position)
+							guiobjects[i].Visible = vis
+							guiobjects[i].Position = Vector2.new(pos.X, pos.Y)
+						end
+						if v < (tick() - 0.11) then
+							guiobjects[i].Visible = false
+							recentlyhit[i] = nil
+						end
+					end
+				end
+			end)
+			task.spawn(function()
+				repeat
+					task.wait()
+					if entity.isAlive then 
+						local pickaxe = getPickaxe()
+						local axe = getAxe()
+						local sword = getSword()
+						local broke = 0
+						for i,v in pairs(structures) do 
+							local primary = primaryparts[v]
+							if not primary then 	
+								primaryparts[v] = v.PrimaryPart or v:FindFirstChildWhichIsA("BasePart")
+								primary = primaryparts[v]
+							end
+							if primary and v:GetAttribute("health") > 0 and (primary.Position - (localserverpos or entity.character.HumanoidRootPart.Position)).Magnitude < NukerRange["Value"] and (recentlyhit[v] == nil or recentlyhit[v] < tick()) then 
+								if sword and v:GetAttribute("placedBy") ~= lplr.UserId then
+									remotes.hitStructure:FireServer(tonumber(sword), v, primary.Position)
+									guiobjects[v].Text = v.Name.."\n"..(math.floor((v:GetAttribute("health") / v:GetAttribute("maxHealth")) * 100)).."%"
+									recentlyhit[v] = tick() + (broke > 15 and 0.1 or 0.05)
+									broke += 1
+								end
+							end
+						end
+						for i,v in pairs(resources) do 
+							local primary = primaryparts[v]
+							if not primary then 	
+								primaryparts[v] = v.PrimaryPart or v:FindFirstChildWhichIsA("BasePart")
+								primary = primaryparts[v]
+							end
+							if primary and v:GetAttribute("health") > 0 and (primary.Position - (localserverpos or entity.character.HumanoidRootPart.Position)).Magnitude < math.min(NukerRange["Value"], 30) and (recentlyhit[v] == nil or recentlyhit[v] < tick()) then 
+								if pickaxe then 
+									remotes.mine:FireServer(tonumber(pickaxe), v, primary.Position)
+									guiobjects[v].Text = v.Name.."\n"..(math.round((v:GetAttribute("health") / v:GetAttribute("maxHealth")) * 100)).."%"
+									recentlyhit[v] = tick() + 0.2
+									broke += 1
+								end
+								if axe then
+									remotes.chop:FireServer(tonumber(axe), v, primary.Position)
+									guiobjects[v].Text = v.Name.."\n"..(math.round((v:GetAttribute("health") / v:GetAttribute("maxHealth")) * 100)).."%"
+									recentlyhit[v] = tick() + 0.2
+									broke += 1
+								end
+							end
+						end
+						task.wait(0.01)
+					end
+				until (not Nuker["Enabled"])
+			end)
+		else
+			RunLoops:UnbindFromRenderStep("Nuker")
+			for i,v in pairs(recentlyhit) do 
+				if guiobjects[i] then 
+					guiobjects[i].Visible = false
+				end
+			end
+		end
+	end
+})
+
+UtilityTab:AddButton({
+	Name = "Anti Staff",
+	Callback = function()
+		OrionLib:MakeNotification({
+			Name = "Use Alt Accounts",
+			Content = "Using anti Staff wont stop bans due to the ne Ban panel. ",
+			Image = "rbxassetid://13350774006",
+			Time = 5
+		})
+  	end    
+})
+
+
+
+
+end
+OrionLib:Init()
