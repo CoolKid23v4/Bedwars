@@ -1,1 +1,160 @@
-HELLO
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Window = OrionLib:MakeWindow({Name = "Grinch [v1.0]", IntroEnabled= false, HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest21414w4234214"})
+
+local CombatTab = Window:MakeTab({
+	Name = "Combat",
+	Icon = "rbxassetid://13350770192",
+	PremiumOnly = false
+})
+
+local BlatantTab = Window:MakeTab({
+	Name = "Blatant",
+	Icon = "rbxassetid://13350767943",
+	PremiumOnly = false
+})
+
+local RenderTab = Window:MakeTab({
+	Name = "Render",
+	Icon = "rbxassetid://13350832775",
+	PremiumOnly = false
+})
+
+local UtilityTab = Window:MakeTab({
+	Name = "Utility",
+	Icon = "rbxassetid://13350793918",
+	PremiumOnly = false
+})
+
+local StatusTab = Window:MakeTab({
+	Name = "Status: ✅",
+	Icon = "",
+	PremiumOnly = true
+})
+
+local Section = CombatTab:AddSection({
+	Name = "Combat"
+})
+
+local Section = BlatantTab:AddSection({
+	Name = "Blatant"
+})
+
+local Section = RenderTab:AddSection({
+	Name = "Render"
+})
+
+local Section = UtilityTab:AddSection({
+	Name = "Utility"
+})
+
+CombatTab:AddToggle({
+	Name = "Aim Assist",
+	Default = false,
+	Callback = function(Value)
+		print(Value)
+	end    
+})
+
+CombatTab:AddToggle({
+	Name = "Auto Clicker",
+	Default = false,
+	Callback = function(Value)
+		print(Value)
+	end    
+})
+
+CombatTab:AddToggle({
+	Name = "Reach",
+	Default = false,
+	Callback = function(Value)
+		print(Value)
+	end    
+})
+
+CombatTab:AddToggle({
+	Name = "Velocity",
+	Default = false,
+	Callback = function(Value)
+		print(Value)
+	end    
+})
+
+CombatTab:AddToggle({
+	Name = "Run",
+	Default = false,
+	Callback = function(Value)
+		print(Value)
+	end    
+})
+
+BlatantTab:AddToggle({
+	Name = "Killaura",
+	Default = false,
+	Callback = function(Value)
+		print(Value)
+	end    
+})
+
+BlatantTab:AddToggle({
+	Name = "NoFall",
+	Default = false,
+	Callback = function(Value)
+		print(Value)
+	end    
+})
+
+BlatantTab:AddBind({
+	Name = "Fly",
+	Default = Enum.KeyCode.R,
+	Hold = false,
+	Callback = function()
+		print("press")
+	end    
+})
+
+BlatantTab:AddBind({
+	Name = "Scaffold",
+	Default = Enum.KeyCode.F,
+	Hold = false,
+	Callback = function()
+		print("press")
+	end    
+})
+
+RenderTab:AddToggle({
+	Name = "Name Tags",
+	Default = false,
+	Callback = function(Value)
+		print(Value)
+	end    
+})
+
+RenderTab:AddToggle({
+	Name = "ESP",
+	Default = false,
+	Callback = function(Value)
+		print(Value)
+	end    
+})
+
+RenderTab:AddToggle({
+	Name = "Tracers",
+	Default = false,
+	Callback = function(Value)
+		print(Value)
+	end    
+})
+
+UtilityTab:AddButton({
+	Name = "Panic",
+	Callback = function()
+        OrionLib:Destroy()
+  	end    
+})
+
+
+
+
+
+end
+OrionLib:Init()
