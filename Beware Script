@@ -1,4 +1,4 @@
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/CoolKid23v4/Bedwars/main/Beware%20Script')))()
 local Window = OrionLib:MakeWindow({Name = "Grinch [v1.0]", IntroEnabled= false, HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest21414w4234214"})
 
 local CombatTab = Window:MakeTab({
